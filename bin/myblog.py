@@ -3,12 +3,13 @@
 
 import os
 HOME = os.path.dirname(os.path.abspath(__file__))
-import loader
+from common.base import loader
 loader.loadconf(HOME)
 import config
 
 import tornado
 import tornado.web
+
 
 
 class IndexHandler(tornado.web.RequestHandler):
@@ -25,10 +26,6 @@ def main():
         application.listen(config.port)
         instance = tornado.ioloop.IOLoop.instance()
         instance.start()
-#        httpserver = tornado.httpserver.HTTPServer(application)
-#        httpserver.listen(6688)
-#        instance = tornado.ioloop.IOLoop.instance()
-#        instance.start()
     except:
         print "wrong......"
 
