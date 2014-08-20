@@ -13,5 +13,6 @@ port = 8888
 # 模板路径
 template = os.path.join(HOME, 'bin/template')
 static = os.path.join(HOME, 'bin/static')
+article = os.path.join(HOME, 'bin/article')
 
 settings = {'debug':True}
