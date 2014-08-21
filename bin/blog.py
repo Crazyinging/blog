@@ -2,6 +2,7 @@
 # -*- coding:utf-8 -*-
 
 import os
+import chardet
 HOME = os.path.dirname(os.path.abspath(__file__))
 from common.base import loader, logger
 from common.web import template
@@ -20,36 +21,74 @@ template = template.install(config.template)
 
 class IndexHandler(tornado.web.RequestHandler):
 
-    def get_articlelist(self):
+    def get_articlelist(self, page=1, num=0):
+        '''
+        默认page为1，num为0；
+        后者特指不进行分页，将所有文章列在同一页上
+        '''
         articlelist = []
         dirlist = os.listdir(config.article)
         log.debug('dirlist=%s'%(dirlist))
         for c in dirlist:
             if not os.path.isfile(os.path.join(config.article, c)):
                 continue
-            log.debug('c=%s'%(c))
+            if c.startswith('.'):
+                continue
+            d = chardet.detect(c)
+            e = c.decode(d['encoding'])
             try:
-                tmp = c.split('_')
+                tmp = e.split('_')
                 tmpdict = {}
-                log.debug('~~~~~~~~~~~~~~~~~~~~~~~~~~~')
                 tmpdict['time']  = u'%s年%s月%s日'%(tmp[0], tmp[1], tmp[2])
-                log.debug('tmpdict["time"]=%s'%(tmpdict['time']))
                 tmpdict['name']  = tmp[3]
-                log.debug('tmpdict["name"]=%s'%(tmpdict['name']))
-                tmpdict['title'] = tmp[4]
-                log.debug('tmpdict["title"]=%s'%(tmpdict['title']))
+                tmpdict['title'] = tmp[4][:-5]
+                tmpdict['a']     = '/article/%s/%s/%s/%s.html'%(tmp[0], tmp[1], tmp[2], tmp[3])
+                print 'a = %s'%(tmpdict['a'])
+                print 'e = %s'%(e)
                 articlelist.append(tmpdict)
-                log.debug('tmpdict=%s'%(tmpdict))
             except:
                 pass
+        
+        result = {}
+        tmplen = articlelist.__len__()
+        if num == 0:
+            result['page']          = 1
+            result['pagenum']       = 1
+            result['listnum']       = tmplen
+            result['articlelist']   = articlelist
+        else:
+            result['page']          = page
+            result['pagenum']       = tmplen / num + 1 if tmplen % num else 0
+            if page < result['pagenum'] or page == result['pagenum'] and not tmplen % num:
+                result['listnum']   = num
+            else:
+                result['listnum']   = tmplen % num
+            if result['page'] == result['pagenum']:
+                start = (result['page'] - 1) * num
+                result['articlelist'] = articlelist[start :]
+            else:
+                start = (result['page'] - 1) * num
+                end   = start + num
+                result['articlelist'] = articlelist[start : end]
 
-        return articlelist
+        return result
+            
                 
 
+    def get_articlelist_withpage(self, page=1, num=12):
+        '''
+        配合get_articlelist完成分页；
+        page代表第几页，num代表每页文章数量
+        '''
+        page = int(self.get_argument('page', '1'))
+        result = self.get_articlelist(page, num)
+        return result
+
+
     def get(self):
-        articlelist = self.get_articlelist()
-        log.debug('articlelist = %s'%(articlelist))
-        self.write(template('index.html', articlelist=articlelist))
+        result = self.get_articlelist_withpage()
+        log.debug('result = %s'%(result))
+        self.write(template('index.html', result=result))        # 这个地方不能传page=page，应该是被html里面的name="page"覆盖了
 
 
 
@@ -86,6 +125,7 @@ class ArticleHandler(tornado.web.RequestHandler):
 
     def get(self, tmp):
 
+        log.debug('aarticlearticlearticlearticlearticlearticlerticle')
         try:
             namepart = self.get_namepart()
             tmpname  = '%s_%s_%s_%s'%(namepart['year'], namepart['month'], namepart['day'], namepart['name'])

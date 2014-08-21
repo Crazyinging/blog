@@ -1,0 +1,594 @@
+# -*- coding: utf-8 -*-
+
+<%inherit file="/base.html"/>
+
+<%block name="page">
+	<div>
+		<h2 class="text-center">2011成都网选最水的几道题</h2>
+	</div>
+	<div id="article_content" class="article_content">
+
+&nbsp; &nbsp; 好久没动博客了，马上也是要那什么什么的人了，写点儿吧~。<br>
+&nbsp; &nbsp; 去年带我的俩学长已经工作了囧~、今年的俩队友也跑路去找工作了囧~、留下
+额孤零零的一个人儿，&#30524;看现场赛就要到了、没奈何只能自己找找比赛单挑了（不
+能就这样轻易就放弃了吧~），同时为他俩祝福，加油呀~，进阿里、进一起、在一
+起、在一起。。。哦不对，喊错了，是进阿里。。。<br>
+&nbsp; &nbsp; 下面水题献上：<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<pre name="code" class="cpp">1001、此题以前做过，所以没好意思做（当时随便扫了&#30524;，是去年10月份做的，应该是去年为regional准备时
+做的吧，现在又是十月份。。。），就放那里吧，下面是以前的代码，巴拉出来供参考吧：
+
+#include&quot;stdio.h&quot;
+#include&quot;string.h&quot;
+#include&quot;stdlib.h&quot;
+int n,q,t;
+struct SegTree
+{
+    int l,r,mid;
+    int ts;
+}T[80011];
+int attack_l[20011],attack_r[20011],tot;
+int next[20011],pro[20011];
+void build(int l,int r,int k)
+{
+    T[k].l=l;
+    T[k].r=r;
+    T[k].mid=(l&#43;r)&gt;&gt;1;
+    T[k].ts=0;
+    if(l==r)    return ;
+    build(l,T[k].mid,2*k);
+    build(T[k].mid&#43;1,r,2*k&#43;1);
+}
+void update(int l,int r,int k)
+{
+    if(T[k].l==l &amp;&amp; T[k].r==r)    {T[k].ts&#43;&#43;;return ;}
+    if(r&lt;=T[k].mid)        update(l,r,2*k);
+    else if(l&gt;T[k].mid)    update(l,r,2*k&#43;1);
+    else
+    {
+        update(l,T[k].mid,2*k);
+        update(T[k].mid&#43;1,r,2*k&#43;1);
+    }
+}
+int find(int d,int k)
+{
+    int sum=0;
+    if(T[k].l==T[k].r &amp;&amp; T[k].l==d)    return T[k].ts;
+    if(T[k].l&lt;=d &amp;&amp; d&lt;=T[k].r)
+    {
+        sum&#43;=T[k].ts;
+        if(d&lt;=T[k].mid)    sum&#43;=find(d,2*k);
+        else            sum&#43;=find(d,2*k&#43;1);
+        return sum;
+    }
+    else return 0;
+}
+int main()
+{
+    int T,Case;
+    int j;
+    char str[11];
+    int a,b;
+    int temp;
+    scanf(&quot;%d&quot;,&amp;T);
+    for(Case=1;Case&lt;=T;Case&#43;&#43;)
+    {
+        scanf(&quot;%d%d%d&quot;,&amp;n,&amp;q,&amp;t);
+        build(1,n,1);
+        printf(&quot;Case %d:\n&quot;,Case);
+        memset(pro,0,sizeof(pro));
+        memset(next,0,sizeof(next));
+        tot=0;
+        while(q--)
+        {
+            scanf(&quot;%s&quot;,str);
+            if(str[0]=='A')
+            {
+                scanf(&quot;%d%d&quot;,&amp;a,&amp;b);
+                update(a,b,1);
+                attack_l[tot]=a;
+                attack_r[tot&#43;&#43;]=b;
+            }
+            else
+            {
+                scanf(&quot;%d&quot;,&amp;a);
+                j=next[a];
+                while(j&lt;tot)
+                {
+                    if(attack_l[j]&lt;=a &amp;&amp; a&lt;=attack_r[j])
+                    {
+                        pro[a]&#43;&#43;;
+                        j&#43;=t;
+                    }
+                    else j&#43;&#43;;
+                }
+                next[a]=j;
+                temp=find(a,1);
+                printf(&quot;%d\n&quot;,temp-pro[a]);
+            }
+        }
+    }
+    return 0;
+}</pre>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+1003、咱计算几何纯白痴，所以介个没搞出来，yy了个好多未知量、好多个方程的<br>
+方程组，然后果断弃之。。<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<pre name="code" class="cpp">1004、刚开始做比赛就进来俩神&#20284;领导般的人物、诺大个实验室就咱一人儿、只能
+起身随之聊天。。正好不用再发呆半天看哪个题过的多了。
+    去年暑假碰到过此题，鉴于当时处于比现在还白痴的水平于是不了了之~，如今
+ko之~。
+思路：
+1&gt;判断合法否：
+    用floyd，如果存在map[i][k]&#43;map[k][l]&lt;map[i][l]，那么既为不合法；
+2&gt;解决：
+    想想怎么做Dij的，推一下就行。
+    首先、注意是有向边；
+    数据用map数组、初始dis数组为无穷大（除了dis[i][i]=0;），然后将map中
+n*n条信息都加入优先队列，&#20540;小的先弹出；
+    如果不存在一个中间节点l、使得dis[now.s][l]&#43;dis[l][now.e]==map[now.s][now.e]，
+那么s到e必定需要建立一条长度为map[now.s][now.e]的边，赋&#20540;
+dis[now.s][now.e]=map[now.s][now.e]，同时ans&#43;&#43;；
+    最后ans既为结果。
+
+    临时yy出的思路，1Y。
+
+#include&quot;iostream&quot;
+#include&quot;cstdio&quot;
+#include&quot;queue&quot;
+#include&quot;cstring&quot;
+#include&quot;algorithm&quot;
+using namespace std;
+const int N=106;
+
+int n,ans;
+int map[N][N],dis[N][N];
+struct node{
+	int s,e,dis;
+	bool friend operator &lt;(node n1,node n2){
+		return n2.dis&lt;n1.dis;
+	}
+}E[N*N];
+int cmp(node n1,node n2){
+	return n1.dis&lt;n2.dis;
+}
+
+int Judge()
+{
+	int i,l,k;
+	for(k=0;k&lt;n;k&#43;&#43;)
+	for(i=0;i&lt;n;i&#43;&#43;)
+	for(l=0;l&lt;n;l&#43;&#43;)
+		if(map[i][l]&gt;map[i][k]&#43;map[k][l])	return 1;
+	return 0;
+}
+void solve()
+{
+	int i,l;
+	int cnt,temp;
+	priority_queue&lt;node&gt;q;
+	node now;
+
+	cnt=0;
+	for(i=0;i&lt;n;i&#43;&#43;)
+	for(l=0;l&lt;n;l&#43;&#43;)
+	{
+		now.s=i;
+		now.e=l;
+		now.dis=map[i][l];
+		q.push(now);
+	}
+
+	while(!q.empty())
+	{
+		now=q.top();
+		q.pop();
+		for(l=0;l&lt;n;l&#43;&#43;)
+		{
+			temp=dis[now.s][l]&#43;dis[l][now.e];
+			if(dis[now.s][now.e]&gt;temp)	dis[now.s][now.e]=temp;
+		}
+		if(dis[now.s][now.e]&gt;now.dis)	{ans&#43;&#43;;dis[now.s][now.e]=now.dis;}
+	}
+}
+int main()
+{
+	int T,Case;
+	int i,l;
+	cin&gt;&gt;T;
+	for(Case=1;Case&lt;=T;Case&#43;&#43;)
+	{
+		cin&gt;&gt;n;
+		for(i=0;i&lt;n;i&#43;&#43;)
+		for(l=0;l&lt;n;l&#43;&#43;)
+			scanf(&quot;%d&quot;,&amp;map[i][l]);
+		if(Judge())
+		{
+			printf(&quot;Case %d: impossible\n&quot;,Case);
+			continue;
+		}
+
+		ans=0;
+		memset(dis,1,sizeof(dis));
+		for(i=0;i&lt;n;i&#43;&#43;)	dis[i][i]=0;
+		solve();
+
+		printf(&quot;Case %d: %d\n&quot;,Case,ans);
+	}
+	return 0;
+}</pre>
+<br>
+<br>
+<br>
+<br>
+<br>
+<pre name="code" class="cpp">1006、这是当时做的第三道题，就一道纯物理题。
+思路：
+    显然，由于无摩擦，所以质量m无用；
+    注意：甜甜是从第一个点开始的、不是从(0,0)坐标开始的。
+    两个极限&#20540;：
+        1&gt;既然去见女朋友、那么最起码山一定要翻过去吧，所以计算出翻越最高的山
+    所需要的初速度，记为v1；
+        2&gt;所有的坏蛋都是当甜甜经过的时候才开始跑的，那么甜甜的速度一定要满足
+    当它经过坏蛋的时候、其速度&gt;=坏蛋的速度，根据这个，得到另外一个甜甜的初速
+    度不能小于的速度，记为v2；
+    如上，ans=max(v1,v2)。
+
+    误以为给出的m个坏蛋是从左到有排好序的、愣是卡了我一个小时啊！直接憋到蛋碎
+啊！！撞墙。。。
+
+#include&quot;iostream&quot;
+#include&quot;cstdio&quot;
+#include&quot;cmath&quot;
+#include&quot;cstring&quot;
+using namespace std;
+const int N=1006;
+const double g=20;
+
+
+int n,m;
+double ans,w;
+double xp[N],hp[N];
+double xb[N],hb[N],vb[N],wb[N];
+double min_v(double h,double v)
+{
+    return sqrt(2*20.0*h&#43;v*v);
+}
+int main()
+{
+	int T,Case;
+	int i;
+	int pre;
+	double t;
+	cin&gt;&gt;T;
+	for(Case=1;Case&lt;=T;Case&#43;&#43;)
+	{
+		scanf(&quot;%d%d%lf&quot;,&amp;n,&amp;m,&amp;w);
+		ans=0;
+		double c=0;
+		scanf(&quot;%lf%lf&quot;,&amp;xp[0],&amp;hp[0]);
+		for(i=1;i&lt;n;i&#43;&#43;)
+		{
+			scanf(&quot;%lf%lf&quot;,&amp;xp[i],&amp;hp[i]);
+			if(hp[i]&gt;c)	c=hp[i];
+		}
+		c-=hp[0];
+		double tempmb=2*g*c;
+		if(ans&lt;tempmb)	ans=tempmb;
+		xp[n]=900000000;
+		for(i=0;i&lt;m;i&#43;&#43;)
+		{
+			scanf(&quot;%lf%lf%lf&quot;,&amp;xb[i],&amp;vb[i],&amp;wb[i]);
+			for(pre=0;pre&lt;n;pre&#43;&#43;)	if(xp[pre&#43;1]&gt;=xb[i])	break;
+			hb[i]=(hp[pre&#43;1]-hp[pre])/(xp[pre&#43;1]-xp[pre]) * (xb[i] - xp[pre]) &#43; hp[pre];
+			hb[i]-=hp[0];
+			t=vb[i]*vb[i] &#43; 2*g*hb[i];
+			if(ans&lt;t)	ans=t;
+		}
+		ans=sqrt(ans);
+		printf(&quot;Case %d: %.2lf\n&quot;,Case,ans);
+	}
+	return 0;
+}</pre>
+<br>
+<br>
+<br>
+<br>
+<br>
+<pre name="code" class="cpp">1008、做的最后一题，脑残想问题只想了一半、然后就想当然的当结论了、然后就wa到快结束，
+反应过来的时候已经来不及了，[撞墙]。。
+思路：
+    显然，求乘积的话、可以立刻想到多余的m分给尽量多的2，但是这里一定要继续再想，3比
+2更优秀，eg：n=0，m=6，那么显然2*2*2 &lt; 3*3。
+    想明白这个后：
+    先统计所有的负数的个数，如果为偶数则不用甩；如果为奇数，则挑出绝对&#20540;最小的那个用
+m来使它变大，最大先变到0；
+    然后如果还有m残留的话、遍历所有的&#20540;为0的数，&#43;&#43;；
+    然后如果还有m残留的话、遍历所有的&#20540;为1的数，&#43;&#43;；
+    然后如果m还tm继续有残留的话、继续遍历所有的&#20540;为2的数，&#43;&#43;；
+    最后注意一点，如果m此时已然健在、大于0，那么此时将m 3个3个的分开、如果最后剩下1
+个、那么将这个1加入这个序列中最小的那个数里面（这个数不一定是上面分出的3，比如m如果
+此时只有1了，那么m是一个大小为3的份也分不出来的）；如果剩下2个，那么就把这2个作为一
+个数。
+    连成既为答案，m比较大、要用到快速幂取余。
+
+#include&quot;iostream&quot;
+#include&quot;cstdio&quot;
+#include&quot;cstring&quot;
+using namespace std;
+const int N=100006;
+const int mod=1000000007;
+
+__int64 n,m;
+__int64 ans,Min,id;
+int num[N];
+
+__int64 sp(__int64 a,__int64 b)
+{
+	__int64 ans=1;
+	while(b)
+	{
+		if(b%2)	ans=(ans*a)%mod;
+		a=(a*a)%mod;
+		b/=2;
+	}
+	return ans%mod;
+}
+int main()
+{
+	int T,Case;
+	int i;
+	int cnt;
+	cin&gt;&gt;T;
+	for(Case=1;Case&lt;=T;Case&#43;&#43;)
+	{
+		scanf(&quot;%I64d%I64d&quot;,&amp;n,&amp;m);
+		cnt=0;
+		for(i=0;i&lt;n;i&#43;&#43;)
+		{
+			scanf(&quot;%d&quot;,&amp;num[i]);
+			if(num[i]&lt;0)cnt&#43;&#43;;
+		}
+		if(cnt%2)
+		{
+			id=-1;
+			Min=-12345678;
+			for(i=0;i&lt;n;i&#43;&#43;)if(num[i]&lt;0 &amp;&amp; num[i]&gt;Min)	{Min=num[i];id=i;}
+			if(-num[id]&gt;=m)	{num[id]&#43;=m;m=0;}
+			else			{m-=-num[id];num[id]=0;}
+		}
+		for(i=0;i&lt;n &amp;&amp; 0&lt;m;i&#43;&#43;)	if(num[i]==0)	{num[i]&#43;&#43;;m--;}
+		for(i=0;i&lt;n &amp;&amp; 0&lt;m;i&#43;&#43;)	if(num[i]==1)	{num[i]&#43;&#43;;m--;}
+		for(i=0;i&lt;n &amp;&amp; 0&lt;m;i&#43;&#43;)	if(num[i]==2)	{num[i]&#43;&#43;;m--;}
+
+		if(m==1)
+		{
+			id=-1;
+			Min=123456789;
+			for(i=0;i&lt;n;i&#43;&#43;)	if(0&lt;num[i] &amp;&amp; num[i]&lt;Min)	{Min=num[i];id=i;}
+			num[id]&#43;&#43;;
+			m--;
+		}
+		else if(m%3==1)	{num[n&#43;&#43;]=4;m-=4;}
+		else if(m%3==2)	{num[n&#43;&#43;]=2;m-=2;}
+
+		ans=1;
+		for(i=0;i&lt;n;i&#43;&#43;)	ans=(ans*num[i])%mod;
+		ans=(ans*sp(3,m/3))%mod;
+		printf(&quot;Case %d: %I64d\n&quot;,Case,ans);
+	}
+	return 0;
+}</pre>
+<br>
+<br>
+<br>
+<br>
+<br>
+<pre name="code" class="cpp">1009、做的第二题，题目读的我牙齿咬的嘎吱嘎吱响啊。。突然超~级想念我的两位队友。
+题意：
+    略绕口，我解释下（当然是针对于我这样的英语白痴而言的。。）。
+    有好多人，给出n组关系，每组一对a、b、表示a和b互相认识。
+    然后是q组询问，每个询问给出指定一个二货a、让大家给他找朋友，这个朋友x要满足的条
+件是：
+        x和a不是朋友、但x和a的朋友是朋友、并且x!=a（既x不是a自己）。
+    如果有多个这样的x、按照字典序输出。
+思路：
+    显然的字典树&#43;模拟么。
+    用字典树插入这些人的名字，并赋予编号；
+    然后建边，由于关系只有最多1000对，所以直接暴力模拟上面的那个要满足的条件既可。
+
+    不明白为啥，当时用sort排序只能得到错误的排序结果、干抓急憋到内伤，机智下只能用了
+qsort，内存开小越界一次、还好事先有这个准备，然后开大果断ac。
+
+
+#include&quot;iostream&quot;
+#include&quot;cstdio&quot;
+#include&quot;cstring&quot;
+#include&quot;cstdlib&quot;
+#include&quot;algorithm&quot;
+using namespace std;
+const int N=2006;
+const int M=20;
+
+int n,m,ID;
+int con[N][N],ans[N][N];
+char yun[N][M];
+struct dic
+{
+	struct dic * child[26];
+	int id;
+	void init(){
+		for(int l=0;l&lt;26;l&#43;&#43;)	child[l]=NULL;
+		id=-1;
+	}
+};
+struct dic *root;
+
+struct Edge{
+	int v,next;
+}edge[2*N];
+int tot,head[N];
+void add(int a,int b){
+	edge[tot].v=b;edge[tot].next=head[a];head[a]=tot&#43;&#43;;
+	edge[tot].v=a;edge[tot].next=head[b];head[b]=tot&#43;&#43;;
+}
+
+int insert(char str[])
+{
+	struct dic *now,*next;
+	now=root;
+	for(int i=0;str[i];i&#43;&#43;)
+	{
+		if(now-&gt;child[str[i]-'a']!=NULL)
+			now=now-&gt;child[str[i]-'a'];
+		else
+		{
+			next=new dic;
+			next-&gt;init();
+			now-&gt;child[str[i]-'a']=next;
+			now=next;
+		}
+	}
+	strcpy(yun[ID],str);
+	now-&gt;id=ID&#43;&#43;;
+	return now-&gt;id;
+}
+int find(char str[])
+{
+	struct dic *now;
+	now=root;
+	for(int i=0;str[i];i&#43;&#43;)
+	{
+		if(now-&gt;child[str[i]-'a']==NULL)	return -1;
+		now=now-&gt;child[str[i]-'a'];
+	}
+	return now-&gt;id;
+}
+
+void init()
+{
+	int i;
+	int j,v,j2,v2;
+	memset(ans,0,sizeof(ans));
+	for(i=0;i&lt;ID;i&#43;&#43;)
+	{
+		for(j=head[i];j!=-1;j=edge[j].next)
+		{
+			v=edge[j].v;
+			for(j2=head[v];j2!=-1;j2=edge[j2].next)
+			{
+				v2=edge[j2].v;
+				if(con[v2][i])	continue;
+				ans[v2][i]&#43;&#43;;
+			}
+		}
+	}
+}
+
+int ans_cnt;
+struct Ans{
+	char name[M];
+}E[N];
+int cmp(const void *a,const void *b)
+{
+	Ans *c=(Ans *)a;
+	Ans *d=(Ans *)b;
+	return strcmp(c-&gt;name,d-&gt;name);
+}
+
+int main()
+{
+	int T,Case;
+	int i;
+	int f,f1,f2;
+	char str1[M],str2[M],fuck[M];
+	cin&gt;&gt;T;
+	for(Case=1;Case&lt;=T;Case&#43;&#43;)
+	{
+		scanf(&quot;%d%d&quot;,&amp;n,&amp;m);
+		ID=0;
+		root=new dic;
+		root-&gt;id=-1;
+		root-&gt;init();
+		memset(con,0,sizeof(con));
+		tot=0;
+		memset(head,-1,sizeof(head));
+		for(i=0;i&lt;n;i&#43;&#43;)
+		{
+			scanf(&quot;%s%s&quot;,str1,str2);
+			f1=find(str1);
+			f2=find(str2);
+			if(f1==-1)	f1=insert(str1);
+			if(f2==-1)	f2=insert(str2);
+			con[f1][f2]=con[f2][f1]=1;
+			add(f1,f2);
+		}
+		for(i=0;i&lt;ID;i&#43;&#43;)	con[i][i]=1;
+
+		init();
+		int ffuck;
+		printf(&quot;Case %d:\n&quot;,Case);
+		while(m--)
+		{
+			scanf(&quot;%s&quot;,fuck);
+			f=find(fuck);
+			ffuck=0;
+			for(i=0;i&lt;ID;i&#43;&#43;)	if(ans[i][f]&gt;ffuck)	ffuck=ans[i][f];
+
+			if(ffuck==0)	{printf(&quot;-\n&quot;);continue;}
+
+			ans_cnt=0;
+			for(i=0;i&lt;ID;i&#43;&#43;)	if(ans[i][f]==ffuck)	strcpy(E[ans_cnt&#43;&#43;].name,yun[i]);
+
+			qsort(E,ans_cnt,sizeof(E[0]),cmp);
+			printf(&quot;%s&quot;,E[0].name);
+			for(i=1;i&lt;ans_cnt;i&#43;&#43;)	printf(&quot; %s&quot;,E[i].name);
+			printf(&quot;\n&quot;);
+		}
+	}
+	return 0;
+}
+</pre>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+
+	</div>
+
+	<div>
+		<!-- 多说评论框 start -->
+			<div class="ds-thread" data-thread-key="请将此处替换成文章在你的站点中的ID" data-title="请替换成文章的标题" data-url="请替换成文章的网址"></div>
+		<!-- 多说评论框 end -->
+		<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+		<script type="text/javascript">
+		var duoshuoQuery = {short_name:"icesky"};
+			(function() {
+				var ds = document.createElement('script');
+				ds.type = 'text/javascript';ds.async = true;
+				ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+				ds.charset = 'UTF-8';
+				(document.getElementsByTagName('head')[0] 
+				 || document.getElementsByTagName('body')[0]).appendChild(ds);
+			})();
+			</script>
+		<!-- 多说公共JS代码 end -->
+	</div>
+</%block>
+
